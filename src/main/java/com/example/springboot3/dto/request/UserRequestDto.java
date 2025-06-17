@@ -1,6 +1,9 @@
 package com.example.springboot3.dto.request;
 
-import com.example.springboot3.util.PhoneNumber;
+import com.example.springboot3.enums.Gender;
+import com.example.springboot3.enums.UserStatus;
+import com.example.springboot3.dto.validator.*;
+import com.example.springboot3.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -10,26 +13,37 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import static com.example.springboot3.enums.Gender.*;
+
 @Getter
 @Setter
 public class UserRequestDto implements Serializable {
     // Serializable dùng để chuyển đổi từ JSON sang byte nhị phân và ngược lại
-    @NotBlank(message = "FirstName must be not blank")
+    @NotBlank(message = "firstName must be not blank")
     private String firstName;
 
-    @NotNull(message = "LastName must be not null")
+    @NotNull(message = "lastName must be not null")
     private String lastName;
 
-//    @Pattern(regexp = "^\\d{10}$", message = "Phone invalid format")
     @PhoneNumber
     private String phone;
 
-    @Email(message = "Email invalid format")
+    @Email(message = "email invalid format")
     private String email;
 
     @NotNull(message = "dateOfBirth must be not null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
+
+    @EnumPattern(name = "status", regexp = "ACTIVE|INACTIVE|NONE")
+    private UserStatus status;
+
+    @GenderSubset(anyOf = {MALE, FEMALE, OTHER})
+    private Gender gender;
+
+    @NotNull(message = "type must be not null")
+    @EnumValue(name = "type", enumClass = UserType.class)
+    private String type;
 
     @NotNull(message = "username must be not null")
     private String username;

@@ -1,4 +1,4 @@
-package com.example.springboot3.util;
+package com.example.springboot3.dto.validator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
