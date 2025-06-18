@@ -1,5 +1,6 @@
 package com.example.springboot3.controller;
 
+import com.example.springboot3.configuration.Translator;
 import com.example.springboot3.dto.request.UserRequestDto;
 import com.example.springboot3.dto.response.ResponseFailure;
 import com.example.springboot3.dto.response.ResponseSuccess;
@@ -7,6 +8,7 @@ import com.example.springboot3.exception.ResourceNotFoundException;
 import com.example.springboot3.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @Validated
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -24,10 +27,10 @@ public class UserController {
 
     @PostMapping("/")
     public ResponseSuccess addUser(@Valid @RequestBody UserRequestDto user) {
-        System.out.println("Request add user " + user.getFirstName());
+        log.info("Request add user {} {}", user.getFirstName(), user.getLastName());
         try {
             userService.addUser(user);
-            return new ResponseSuccess(HttpStatus.CREATED, "User added successfully,", 1);
+            return new ResponseSuccess(HttpStatus.CREATED, Translator.toLocale("user.add.success"), 1);
         } catch (ResourceNotFoundException e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -37,7 +40,7 @@ public class UserController {
     public ResponseSuccess updateUser(@PathVariable @Min(1) int userId, @Valid @RequestBody UserRequestDto user) {
         System.out.println("Request update userId=" + userId);
         try {
-            return new ResponseSuccess(HttpStatus.ACCEPTED, "User updated successfully");
+            return new ResponseSuccess(HttpStatus.ACCEPTED, Translator.toLocale("user.upd.success"));
         } catch (Exception e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -48,7 +51,7 @@ public class UserController {
                                         @RequestParam boolean status) {
         System.out.println("Request change status, userId=" + userId);
         try {
-            return new ResponseSuccess(HttpStatus.NO_CONTENT, "User deleted successfully");
+            return new ResponseSuccess(HttpStatus.NO_CONTENT, Translator.toLocale("user.change.success"));
         } catch (Exception e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -58,7 +61,7 @@ public class UserController {
     public ResponseSuccess deleteUser(@PathVariable @Min(value = 1, message = "userId must be greater than 0") int userId) {
         System.out.println("Request delete userId =" + userId);
         try {
-            return new ResponseSuccess(HttpStatus.NO_CONTENT, "User deleted successfully");
+            return new ResponseSuccess(HttpStatus.NO_CONTENT, Translator.toLocale("user.del.success"));
         } catch (Exception e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -68,7 +71,7 @@ public class UserController {
     public ResponseSuccess getUser(@PathVariable @Min(1) int userId) {
         System.out.println("Request get user detail, userId=" + userId);
         try {
-            return new ResponseSuccess(HttpStatus.OK, "user", new UserRequestDto("Tay", "Java", "admin@tayjava.vn", "0123456789"));
+            return new ResponseSuccess(HttpStatus.OK, "user", new UserRequestDto("Vinh", "Vinh", "admin@tayjava.vn", "0123456789"));
         } catch (Exception e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -78,7 +81,7 @@ public class UserController {
     public ResponseSuccess getAllUser(@RequestParam(defaultValue = "0", required = false) int pageNo,
                                       @Min(10) @RequestParam(defaultValue = "20", required = false) int pageSize) {
         System.out.println("Request get all of users");
-        return new ResponseSuccess(HttpStatus.OK, "user", List.of(new UserRequestDto("Tay", "Java", "admin@tayjava.vn", "0123456789"),
-                new UserRequestDto("Leo", "Messi", "leomessi@email.com", "0123456456")));
+        return new ResponseSuccess(HttpStatus.OK, "user", List.of(new UserRequestDto("Vinh", "Java", "admin@vinhbgdm.vn", "0123456789"),
+                new UserRequestDto("Ronaldo", "Messi", "leomessi@email.com", "0123456456")));
     }
 }
