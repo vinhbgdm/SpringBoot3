@@ -3,8 +3,11 @@ package com.example.springboot3.controller;
 import com.example.springboot3.dto.request.UserRequestDto;
 import com.example.springboot3.dto.response.ResponseFailure;
 import com.example.springboot3.dto.response.ResponseSuccess;
+import com.example.springboot3.exception.ResourceNotFoundException;
+import com.example.springboot3.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +19,16 @@ import java.util.List;
 @Validated
 public class UserController {
 
+    @Autowired
+    private UserService userService;
+
     @PostMapping("/")
     public ResponseSuccess addUser(@Valid @RequestBody UserRequestDto user) {
         System.out.println("Request add user " + user.getFirstName());
         try {
+            userService.addUser(user);
             return new ResponseSuccess(HttpStatus.CREATED, "User added successfully,", 1);
-        } catch (Exception e) {
+        } catch (ResourceNotFoundException e) {
             return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
