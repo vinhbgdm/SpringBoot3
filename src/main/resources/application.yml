@@ -1,5 +1,10 @@
 spring:
   profiles:
     active: local
-
-
+openapi:
+  service:
+    server: http://localhost:8080
+    title: API Service
+    version: 1.0.0
+    description: API service
+    api-docs: api-service
