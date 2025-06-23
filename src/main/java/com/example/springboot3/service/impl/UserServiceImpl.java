@@ -10,6 +10,7 @@ import com.example.springboot3.enums.UserType;
 import com.example.springboot3.exception.ResourceNotFoundException;
 import com.example.springboot3.model.Address;
 import com.example.springboot3.model.User;
+import com.example.springboot3.repository.SearchRepository;
 import com.example.springboot3.repository.UserRepository;
 import com.example.springboot3.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ import static com.example.springboot3.util.AppConst.SORT_BY;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final SearchRepository searchRepository;
 
     @Override
     public long saveUser(UserRequestDto request) {
@@ -169,6 +171,11 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(orders));
         Page<User> users = userRepository.findAll(pageable);
         return convertToPageResponse(users, pageable);
+    }
+
+    @Override
+    public PageResponse<?> getAllUsersAndSearchWithPagingAndSorting(int pageNo, int pageSize, String search, String sortBy) {
+        return searchRepository.getAllUsersAndSearchWithPagingAndSorting(pageNo, pageSize, search, sortBy);
     }
 
     private Set<Address> convertToAddress(Set<AddressDto> addresses) {
