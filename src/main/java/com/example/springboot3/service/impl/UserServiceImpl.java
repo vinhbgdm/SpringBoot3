@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
                 .dateOfBirth(user.getDateOfBirth())
                 .gender(user.getGender())
                 .username(user.getUsername())
-                .type(user.getType().name())
+                .type(user.getType())
                 .status(user.getStatus())
                 .build();
     }
@@ -178,6 +178,11 @@ public class UserServiceImpl implements UserService {
         return searchRepository.getAllUsersAndSearchWithPagingAndSorting(pageNo, pageSize, search, sortBy);
     }
 
+    @Override
+    public PageResponse<?> advanceSearchWithCriteria(int pageNo, int pageSize, String search, String address, String... sorts) {
+        return searchRepository.searchUserByCriteria(pageNo, pageSize, search, address, sorts);
+    }
+
     private Set<Address> convertToAddress(Set<AddressDto> addresses) {
         Set<Address> result = new HashSet<>();
         addresses.forEach(a ->
@@ -209,7 +214,7 @@ public class UserServiceImpl implements UserService {
                 .phone(user.getPhone())
                 .gender(user.getGender())
                 .username(user.getUsername())
-                .type(user.getType().name())
+                .type(user.getType())
                 .status(user.getStatus())
                 .build()).toList();
         return PageResponse.builder()

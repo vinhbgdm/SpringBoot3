@@ -3,6 +3,7 @@ package com.example.springboot3.model;
 import com.example.springboot3.enums.Gender;
 import com.example.springboot3.enums.UserStatus;
 import com.example.springboot3.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -17,7 +18,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "tbl_user")
+@Entity
 public class User extends AbstractEntity {
 
     @Column(name = "first_name")
@@ -65,5 +66,10 @@ public class User extends AbstractEntity {
             addresses.add(address);
             address.setUser(this);
         }
+    }
+
+    @JsonIgnore // Stop infinite loop
+    public Set<Address> getAddresses() {
+        return addresses;
     }
 }
