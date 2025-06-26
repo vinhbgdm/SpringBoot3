@@ -5,6 +5,7 @@ import com.example.springboot3.dto.request.AddressDto;
 import com.example.springboot3.dto.request.UserRequestDto;
 import com.example.springboot3.dto.response.PageResponse;
 import com.example.springboot3.dto.response.UserDetailResponse;
+import com.example.springboot3.enums.Gender;
 import com.example.springboot3.enums.UserStatus;
 import com.example.springboot3.enums.UserType;
 import com.example.springboot3.exception.ResourceNotFoundException;
@@ -12,6 +13,8 @@ import com.example.springboot3.model.Address;
 import com.example.springboot3.model.User;
 import com.example.springboot3.repository.SearchRepository;
 import com.example.springboot3.repository.UserRepository;
+import com.example.springboot3.repository.specification.UserSpecification;
+import com.example.springboot3.repository.specification.UserSpecificationsBuilder;
 import com.example.springboot3.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +22,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.example.springboot3.util.AppConst.SEARCH_SPEC_OPERATOR;
 import static com.example.springboot3.util.AppConst.SORT_BY;
 
 @Service
@@ -183,6 +185,37 @@ public class UserServiceImpl implements UserService {
         return searchRepository.searchUserByCriteria(pageNo, pageSize, search, address, sorts);
     }
 
+    @Override
+    public PageResponse<?> advanceSearchWithSpecifications(Pageable pageable, String[] user, String[] address) {
+        log.info("getUsersBySpecifications");
+
+        if (user != null && address != null) {
+            return searchRepository.searchUserByCriteriaWithJoin(pageable, user, address);
+        } else if (user != null) {
+            UserSpecificationsBuilder builder = new UserSpecificationsBuilder();
+
+            Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
+            for (String s : user) {
+                Matcher matcher = pattern.matcher(s);
+                if (matcher.find()) {
+                    builder.with(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5));
+                }
+            }
+
+            Page<User> users = userRepository.findAll(Objects.requireNonNull(builder.build()), pageable);
+
+            return convertToPageResponse(users, pageable);
+        }
+
+        return convertToPageResponse(userRepository.findAll(pageable), pageable);
+    }
+
+    /**
+     * Convert Set<AddressDTO> to Set<Address>
+     *
+     * @param addresses
+     * @return
+     */
     private Set<Address> convertToAddress(Set<AddressDto> addresses) {
         Set<Address> result = new HashSet<>();
         addresses.forEach(a ->
@@ -204,6 +237,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException(Translator.toLocale("user.not.found")));
     }
 
+    /**
+     * Convert Page<User> to PageResponse
+     *
+     * @param users
+     * @param pageable
+     * @return
+     */
     private PageResponse<?> convertToPageResponse(Page<User> users, Pageable pageable) {
         List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
                 .id(user.getId())
