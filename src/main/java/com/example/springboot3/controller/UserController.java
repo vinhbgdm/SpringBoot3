@@ -8,6 +8,7 @@ import com.example.springboot3.exception.ResourceNotFoundException;
 import com.example.springboot3.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,20 @@ public class UserController {
         } catch (Exception e) {
             log.error(ERROR_MESSAGE, e.getMessage(), e.getCause());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Change status fail");
+        }
+    }
+
+    @Operation(summary = "Confirm user", description = "Send a request via this API to confirm user")
+    @GetMapping("/confirm/{userId}")
+    public ResponseData<String> confirm(@Min(1) @PathVariable int userId, @RequestParam String verifyCode, HttpServletResponse response) {
+        log.info("Confirm user, userId={}, verifyCode={}", userId, verifyCode);
+
+        try {
+            userService.confirmUser(userId, verifyCode);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User has confirmed successfully");
+        } catch (Exception e) {
+            log.error("errorMessage={}", e.getMessage(), e.getCause());
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "Confirm was failed");
         }
     }
 

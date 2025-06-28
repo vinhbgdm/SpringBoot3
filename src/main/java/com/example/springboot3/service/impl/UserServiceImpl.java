@@ -15,7 +15,9 @@ import com.example.springboot3.repository.SearchRepository;
 import com.example.springboot3.repository.UserRepository;
 import com.example.springboot3.repository.specification.UserSpecification;
 import com.example.springboot3.repository.specification.UserSpecificationsBuilder;
+import com.example.springboot3.service.MailService;
 import com.example.springboot3.service.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,9 +43,10 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final SearchRepository searchRepository;
+    private final MailService mailService;
 
     @Override
-    public long saveUser(UserRequestDto request) {
+    public long saveUser(UserRequestDto request) throws MessagingException, UnsupportedEncodingException {
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -68,6 +72,10 @@ public class UserServiceImpl implements UserService {
                         .build()));
 
         userRepository.save(user);
+
+        if(user.getId() != null){
+            mailService.sendConfirmLink(user.getEmail(), user.getId(), "code@123");
+        }
 
         log.info("User has added successfully, userId={}", user.getId());
 
@@ -103,6 +111,11 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         log.info("User status has changed successfully, userId={}", userId);
+    }
+
+    @Override
+    public String confirmUser(int userId, String verifyCode) {
+        return "Confirmed!";
     }
 
     @Override
